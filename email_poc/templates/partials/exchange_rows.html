@@ -1,0 +1,69 @@
+{# Lignes de la timeline — une div par échange, ordre chronologique inversé #}
+{% for ex in exchanges_reversed %}
+{% set c = colors.get(ex.type, default_color) %}
+{% set d = ex.direction %}
+{% set orig_idx = total - loop.index %}
+
+{# Flèche de direction et nom de l'expéditeur #}
+{% if d == "cal" %}
+    {% set dir_arrow = "&#128197;" %}
+    {% set sender_h = "" %}
+{% elif d == "work" %}
+    {% set dir_arrow = "&#9201;" %}
+    {% set sender_h = "" %}
+{% elif d == "out" %}
+    {% set dir_arrow = "&#8594;" %}
+    {% set sender_h = ex.sender_name %}
+{% else %}
+    {% set dir_arrow = "&#8592;" %}
+    {% set sender_h = ex.sender_name %}
+{% endif %}
+
+{# Noms d'équipements pour le filtre et la recherche #}
+{% set eq_names = ex.equipments|map(attribute='display_name')|map('lower')|list if ex.equipments else [] %}
+{% set att_names = ex.get("attachments", [])|map(attribute='filename')|join(' ')|lower %}
+{% set eq_s = eq_names|join(' ') %}
+{% set search_text = (ex.body|lower ~ ' ' ~ (ex.subject or '')|lower ~ ' ' ~ eq_s ~ ' ' ~ att_names) %}
+
+<div class="ex-row {{ d }}" id="ex-{{ orig_idx }}"
+     data-type="{{ ex.type }}" data-eq="{{ eq_names|join('|') }}"
+     data-text="{{ search_text }}">
+    <div class="ex-dot" style="background:{{ c }};"></div>
+    <div class="ex-card">
+        {# En-tête : badge type + date + direction + extras #}
+        <div class="ex-head">
+            <span class="ex-badge" style="background:{{ c }};">{{ ex.type_label }}</span>
+            <span class="ex-date">{{ ex.date.strftime("%d/%m/%Y %H:%M") if ex.date else "?" }}</span>
+            <span class="ex-dir">{{ dir_arrow|safe }} {{ sender_h }}</span>
+            {% if ex.amount %}<span class="amount-tag">{{ ex.amount }} EUR</span>{% endif %}
+            {% if ex.duration_display %}<span class="duration-tag">{{ ex.duration_display }}</span>{% endif %}
+        </div>
+        <div class="ex-subj">{{ ex.subject or "" }}</div>
+
+        {# Localisation pour les RDV #}
+        {% if ex.type == "calendar" and ex.body %}
+            {% set first_line = ex.body.split("\n")[0] %}
+            {% if first_line %}
+            <div class="ex-location">&#128205; {{ first_line }}</div>
+            {% endif %}
+        {% endif %}
+
+        {# Tags équipements #}
+        {% if ex.equipments %}
+        <div class="ex-eq-row">
+            {% for eq in ex.equipments %}
+            <span class="eq-tag-sm eq-{{ eq.category }}">{{ eq_icons.get(eq.category, '&#128295;')|safe }} {{ eq.display_name }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {# Pièces jointes #}
+        {% set attachments = ex.get("attachments", []) %}
+        {% set ex_idx = orig_idx %}
+        {% include 'partials/attachments.html' %}
+
+        {# Corps de l'email #}
+        <div class="ex-body">{{ ex.body }}</div>
+    </div>
+</div>
+{% endfor %}

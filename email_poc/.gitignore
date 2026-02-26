@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+
+# Generated HTML output
+timeline_*.html
+
+# Client data & attachments (sensitive)
+clients.json
+attachments/
+
+# OCR cache
+*.ocr.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

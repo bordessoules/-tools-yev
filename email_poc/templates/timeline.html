@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Timeline - {{ client_name }}</title>
+<link rel="stylesheet" href="static/timeline.css">
+</head>
+<body>
+
+<div class="hdr">
+    <a href="index.html" class="hdr-back">&larr; Clients</a>
+    <h1>{{ client_name }}</h1>
+    <div class="hdr-sub">
+        Tel: {{ phones }} &middot;
+        Email: {{ emails }} &middot;
+        {{ address }}
+    </div>
+    <div class="hdr-sub">{{ total_events }} &eacute;v&eacute;nements</div>
+</div>
+
+<div class="controls">
+    <input class="search-box" type="text" placeholder="Rechercher..." oninput="doSearch(this.value)">
+    {% for tf in type_filters %}
+    <button class="type-pill" data-type="{{ tf.type_key }}"
+            onclick="filterType('{{ tf.type_key }}')"
+            style="--pill-color:{{ tf.color }}">
+        <span class="pill-dot" style="background:{{ tf.color }}"></span>{{ tf.label }} ({{ tf.count }})
+    </button>
+    {% endfor %}
+</div>
+
+<div class="main">
+    {# Panneau équipements #}
+    <div class="eq-panel">
+        <div class="eq-panel-header" onclick="toggleEqPanel(this)">
+            <h3>&#128295; &Eacute;quipements d&eacute;tect&eacute;s ({{ eq_total }})</h3>
+            <div class="eq-panel-chevron">&#9660;</div>
+        </div>
+        <div class="eq-panel-body">
+            {% include 'partials/equipment_panel.html' %}
+        </div>
+    </div>
+
+    {# Timeline des échanges #}
+    <div class="timeline">
+        {% include 'partials/exchange_rows.html' %}
+    </div>
+</div>
+
+{# Overlay pièces jointes (image/PDF gauche + OCR droite) #}
+<div id="att-overlay" class="att-overlay" style="display:none">
+    <div class="att-overlay-bar">
+        <a id="att-overlay-newtab" href="#" target="_blank">&#8599; Nouvel onglet</a>
+        <span id="att-overlay-title"></span>
+        <button onclick="closeAttOverlay()">&times;</button>
+    </div>
+    <div class="att-overlay-body">
+        <div class="att-overlay-left" id="att-overlay-left"></div>
+        <div class="att-overlay-right" id="att-overlay-right"></div>
+    </div>
+</div>
+
+<script src="static/timeline.js"></script>
+</body>
+</html>

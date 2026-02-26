@@ -1,0 +1,33 @@
+{# Panneau inventaire des équipements détectés, regroupés par catégorie #}
+{% if not eq_occurrences %}
+<div class="eq-inv-empty">Aucun équipement détecté</div>
+{% else %}
+{% for cat in eq_cat_order if cat in eq_by_cat %}
+    {% set items = eq_by_cat[cat] %}
+    <div class="eq-inv-cat">
+        <div class="eq-inv-cat-head">{{ eq_icons[cat]|safe }} {{ eq_cat_labels[cat] }} ({{ items|length }})</div>
+        {% for occ in items %}
+        {% set eq = occ.equipment %}
+        {% set dt_str = occ.date.strftime("%d/%m/%Y") if occ.date else "" %}
+        {% set dt_iso = occ.date.strftime("%Y-%m-%d") if occ.date else "" %}
+        <div class="eq-inv-item eq-inv-clickable"
+             data-eq-idx="{{ occ.global_idx }}"
+             data-eq-name="{{ eq.display_name|lower }}"
+             data-eq-date="{{ dt_iso }}"
+             data-eq-sn="{{ eq.serial or '' }}"
+             data-eq-exchange="{{ occ.exchange_idx }}"
+             data-eq-cat="{{ cat }}"
+             onclick="filterByEquipment(this.dataset.eqName)">
+            <span class="eq-inv-name">{{ eq.display_name }}</span>
+            {% if eq.serial %}<span class="eq-sn">SN:{{ eq.serial }}</span>{% endif %}
+            <span class="eq-inv-date">{{ dt_str }}</span>
+            <span class="eq-inv-src">{{ occ.type_label }}</span>
+            <span class="eq-inv-count"></span>
+            <button class="eq-inv-link-btn" id="eq-link-{{ occ.global_idx }}"
+                    onclick="event.stopPropagation();linkEquipment({{ occ.global_idx }})"
+                    title="Lier à un item inventaire Django">&#128279;</button>
+        </div>
+        {% endfor %}
+    </div>
+{% endfor %}
+{% endif %}

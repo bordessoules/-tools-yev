@@ -1,0 +1,71 @@
+{# Rendu d'une liste de pièces jointes pour un échange #}
+{% if attachments %}
+<div class="att-row">
+    <div class="att-row-label">&#128206; Pièces jointes:</div>
+    <div class="att-files">
+    {% for att in attachments %}
+        {% set href = "attachments/" ~ client_id ~ "/" ~ att.saved_name %}
+        {% set ocr_id = "ocr-" ~ ex_idx ~ "-" ~ loop.index0 %}
+        {% set ocr = ocr_results.get(att.saved_name) %}
+        {% set ocr_text = ocr.description if ocr and ocr.description else "" %}
+        {% set ocr_ref = ocr_id if ocr_text else "" %}
+
+        {# Badge OCR (oeil ou document) #}
+        {% if ocr_text %}
+            {% if att.filename|is_doc %}
+                {% set badge_icon = "&#128196;" %}
+                {% set badge_title = "Voir le texte extrait" %}
+            {% else %}
+                {% set badge_icon = "&#128065;" %}
+                {% set badge_title = "Voir le contenu OCR" %}
+            {% endif %}
+            {% set ocr_badge %}
+                <span class="att-ocr-badge"
+                    onclick="event.stopPropagation();event.preventDefault();toggleOcr('{{ ocr_id }}')"
+                    title="{{ badge_title }}">{{ badge_icon }}</span>
+            {% endset %}
+            {% set ocr_block %}
+                <div class="att-ocr-content" id="{{ ocr_id }}">{{ ocr_text }}</div>
+            {% endset %}
+        {% else %}
+            {% set ocr_badge = "" %}
+            {% set ocr_block = "" %}
+        {% endif %}
+
+        {# Type de fichier pour l'overlay #}
+        {% if att.filename|is_image_ext or att.content_type.startswith('image/') %}
+            {% set att_type = "image" %}
+        {% elif att.filename|is_pdf %}
+            {% set att_type = "pdf" %}
+        {% else %}
+            {% set att_type = "other" %}
+        {% endif %}
+
+        {# Rendu image (miniature) ou fichier (lien) #}
+        {% if att_type == "image" %}
+        <div class="att-thumb-wrap">
+            <a href="{{ href }}" onclick="openAttOverlay(this);return false"
+               data-href="{{ href }}" data-title="{{ att.filename }}"
+               data-type="{{ att_type }}" data-ocr="{{ ocr_ref }}">
+                <img class="att-thumb" src="{{ href }}" alt="{{ att.filename }}" loading="lazy">
+            </a>
+            <div class="att-thumb-info">
+                <span class="att-name">{{ att.filename }}</span>
+                <span class="att-size">{{ att.size|format_size }}</span>{{ ocr_badge|safe }}
+            </div>
+            {{ ocr_block|safe }}
+        </div>
+        {% else %}
+        <a class="att-item" href="{{ href }}" onclick="openAttOverlay(this);return false"
+           data-href="{{ href }}" data-title="{{ att.filename }}"
+           data-type="{{ att_type }}" data-ocr="{{ ocr_ref }}">
+            {{ att.content_type|att_icon_filter(att.filename)|safe }}
+            <span class="att-name">{{ att.filename }}</span>
+            <span class="att-size">{{ att.size|format_size }}</span>{{ ocr_badge|safe }}
+        </a>
+        {{ ocr_block|safe }}
+        {% endif %}
+    {% endfor %}
+    </div>
+</div>
+{% endif %}
